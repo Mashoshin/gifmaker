@@ -1,0 +1,20 @@
+{
+    "name": "mashoshin/gifmaker",
+    "description": "Library that makes a gif from mp4",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Evgeniy Mashoshin",
+            "email": "mashoshin420@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "GifMaker\\": "src/"
+        }
+    },
+    "require": {
+        "ext-imagick": "*",
+        "php-ffmpeg/php-ffmpeg": "dev-master"
+    }
+}
