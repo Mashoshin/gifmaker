@@ -1,8 +1,8 @@
 <?php
 
-namespace Validator;
+namespace Gifmaker\Validator;
 
-use GifMaker\VideoException;
+use GifMaker\Exception\VideoException;
 
 class Mp4FileValidator
 {
