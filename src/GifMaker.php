@@ -18,6 +18,7 @@ class GifMaker
     private const MIN_SECONDS_VALUE = 0;
 
     private Mp4FileValidator $validator;
+    private int $imageDelay = 15;
 
     public function __construct(
         private string $savingDir,
@@ -28,6 +29,18 @@ class GifMaker
     ) {
         $this->validator = new Mp4FileValidator();
         $this->initRuntimeDir();
+    }
+
+    /**
+     * @param int $delay
+     * The amount of time expressed in 'ticks' that the image should be
+     * displayed for. For animated GIFs there are 100 ticks per second, so a
+     * value of 20 would be 20/100 of a second aka 1/5th of a second.
+     * @return void
+     */
+    private function setImageDelay(int $delay): void
+    {
+        $this->imageDelay = $delay;
     }
 
     /**
@@ -61,7 +74,7 @@ class GifMaker
 
             $frame = new Imagick();
             $frame->readImage($pathToFrame);
-            $frame->setImageDelay(15);
+            $frame->setImageDelay($this->imageDelay);
             $gif->addImage($frame);
         }
 
