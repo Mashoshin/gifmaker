@@ -1,8 +1,9 @@
 <?php
 
-namespace Gifmaker\Validator;
+namespace GifMaker\Validator;
 
-use GifMaker\Exception\VideoException;
+use GifMaker\Exception\InvalidExtensionException;
+use GifMaker\Exception\NotFoundException;
 
 class Mp4FileValidator
 {
@@ -11,17 +12,18 @@ class Mp4FileValidator
     /**
      * @param string $pathToFile
      * @return void
-     * @throws VideoException
+     * @throws InvalidExtensionException
+     * @throws NotFoundException
      */
     public function validate(string $pathToFile): void
     {
         if (!file_exists($pathToFile)) {
-            throw new VideoException("File '$pathToFile' does not exist.");
+            throw new NotFoundException("File '$pathToFile' does not exist.");
         }
 
         $extension = pathinfo($pathToFile)['extension'];
         if ($extension['extension'] !== self::MP4) {
-            throw new VideoException("File extension must be mp4");
+            throw new InvalidExtensionException("File extension must be mp4.");
         }
     }
 }

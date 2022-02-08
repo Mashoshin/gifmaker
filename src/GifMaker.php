@@ -5,6 +5,8 @@ namespace GifMaker;
 use FFMpeg\Coordinate\TimeCode;
 use FFMpeg\FFProbe;
 use FFMpeg\FFMpeg;
+use GifMaker\Exception\InvalidExtensionException;
+use GifMaker\Exception\NotFoundException;
 use GifMaker\Exception\VideoException;
 use Gifmaker\Validator\Mp4FileValidator;
 use Imagick;
@@ -13,7 +15,7 @@ use Throwable;
 
 class GifMaker
 {
-    private const MIN_MINUTES_VALUE = 0;
+    private const MIN_SECONDS_VALUE = 0;
 
     private Mp4FileValidator $validator;
 
@@ -31,8 +33,10 @@ class GifMaker
     /**
      * @param string $pathToVideo
      * @return void
-     * @throws VideoException
+     * @throws InvalidExtensionException
+     * @throws NotFoundException
      * @throws ImagickException
+     * @throws VideoException
      */
     public function create(string $pathToVideo): void
     {
@@ -84,7 +88,7 @@ class GifMaker
 
     private function prepareGifProperties(int $duration): void
     {
-        $this->start = max(self::MIN_MINUTES_VALUE, $this->start);
+        $this->start = max(self::MIN_SECONDS_VALUE, $this->start);
         $this->end = min($duration, $this->end);
     }
 
