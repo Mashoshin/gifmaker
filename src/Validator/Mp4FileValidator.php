@@ -22,7 +22,7 @@ class Mp4FileValidator
         }
 
         $extension = pathinfo($pathToFile)['extension'];
-        if ($extension['extension'] !== self::MP4) {
+        if ($extension !== self::MP4) {
             throw new InvalidExtensionException("File extension must be mp4.");
         }
     }

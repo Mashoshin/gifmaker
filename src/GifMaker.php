@@ -8,7 +8,7 @@ use FFMpeg\FFMpeg;
 use GifMaker\Exception\InvalidExtensionException;
 use GifMaker\Exception\NotFoundException;
 use GifMaker\Exception\VideoException;
-use Gifmaker\Validator\Mp4FileValidator;
+use GifMaker\Validator\Mp4FileValidator;
 use Imagick;
 use ImagickException;
 use Throwable;
@@ -20,7 +20,7 @@ class GifMaker
     private Mp4FileValidator $validator;
 
     public function __construct(
-        private string $savingPath,
+        private string $savingDir,
         private string $runtimeDir = '/runtime',
         private int $start = 0,
         private int $end = 10,
@@ -65,7 +65,7 @@ class GifMaker
             $gif->addImage($frame);
         }
 
-        $gif->writeImages($this->savingPath, true);
+        $gif->writeImages($this->getSavingPath($pathToVideo), true);
 
         $gif->destroy();
         $this->removeRuntimeDir();
@@ -82,7 +82,7 @@ class GifMaker
             $ffprobe = FFProbe::create();
             return (int) $ffprobe->format($pathToVideo)->get('duration');
         } catch (Throwable) {
-            throw new VideoException('Unable to determine video duration');
+            throw new VideoException('Unable to determine video duration.');
         }
     }
 
@@ -112,5 +112,13 @@ class GifMaker
     private function calculateDelay(): float
     {
         return (float) (($this->end - $this->start) / ($this->framesCount + 1));
+    }
+
+    private function getSavingPath(string $originFilePath): string
+    {
+        $filename = pathinfo($originFilePath)['filename'];
+        $trimmedSavingDir = rtrim($this->savingDir, '/');
+
+        return "$trimmedSavingDir/$filename.gif";
     }
 }
