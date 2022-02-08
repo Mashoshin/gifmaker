@@ -1,6 +1,6 @@
 <?php
 
-namespace GifMaker;
+namespace GifMaker\Exception;
 
 use Exception;
 

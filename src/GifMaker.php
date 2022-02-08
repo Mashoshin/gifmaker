@@ -5,10 +5,11 @@ namespace GifMaker;
 use FFMpeg\Coordinate\TimeCode;
 use FFMpeg\FFProbe;
 use FFMpeg\FFMpeg;
+use GifMaker\Exception\VideoException;
+use Gifmaker\Validator\Mp4FileValidator;
 use Imagick;
 use ImagickException;
 use Throwable;
-use Validator\Mp4FileValidator;
 
 class GifMaker
 {
@@ -40,7 +41,7 @@ class GifMaker
         $duration = $this->getVideoDuration($pathToVideo);
         $this->prepareGifProperties($duration);
 
-        $delay = ($this->end - $this->start) / $this->framesCount + 1;
+        $delay = $this->calculateDelay();
 
         $ffmpeg = FFMpeg::create();
         $ffmpegVideo = $ffmpeg->open($pathToVideo);
@@ -102,5 +103,10 @@ class GifMaker
         }
 
         rmdir($this->runtimeDir);
+    }
+
+    private function calculateDelay(): float
+    {
+        return (float) (($this->end - $this->start) / ($this->framesCount + 1));
     }
 }
