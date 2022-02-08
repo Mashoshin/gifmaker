@@ -9,38 +9,28 @@ use GifMaker\Exception\InvalidExtensionException;
 use GifMaker\Exception\NotFoundException;
 use GifMaker\Exception\VideoException;
 use GifMaker\Validator\Mp4FileValidator;
+use GifMaker\ValueObject\GifSettings;
 use Imagick;
 use ImagickException;
 use Throwable;
 
 class GifMaker
 {
-    private const MIN_SECONDS_VALUE = 0;
-
+    private GifSettings $settings;
     private Mp4FileValidator $validator;
-    private int $imageDelay = 15;
 
     public function __construct(
-        private string $savingDir,
+        private string $savingPath,
         private string $runtimeDir = '/runtime',
-        private int $start = 0,
-        private int $end = 10,
-        private int $framesCount = 10
     ) {
+        $this->settings = new GifSettings();
         $this->validator = new Mp4FileValidator();
         $this->initRuntimeDir();
     }
 
-    /**
-     * @param int $delay
-     * The amount of time expressed in 'ticks' that the image should be
-     * displayed for. For animated GIFs there are 100 ticks per second, so a
-     * value of 20 would be 20/100 of a second aka 1/5th of a second.
-     * @return void
-     */
-    private function setImageDelay(int $delay): void
+    public function setSettings(GifSettings $settings): void
     {
-        $this->imageDelay = $delay;
+        $this->settings = $settings;
     }
 
     /**
@@ -56,9 +46,9 @@ class GifMaker
         $this->validator->validate($pathToVideo);
 
         $duration = $this->getVideoDuration($pathToVideo);
-        $this->prepareGifProperties($duration);
-
-        $delay = $this->calculateDelay();
+        $this->settings->calculateStart();
+        $this->settings->calculateEnd($duration);
+        $delay = $this->settings->calculateFramesCutDelay();
 
         $ffmpeg = FFMpeg::create();
         $ffmpegVideo = $ffmpeg->open($pathToVideo);
@@ -66,19 +56,19 @@ class GifMaker
         $gif = new Imagick();
         $gif->setFormat('gif');
 
-        $position = $this->start;
-        for ($i = 0; $i < $this->framesCount; ++$i) {
+        $position = $this->settings->getStart();
+        for ($i = 0; $i < $this->settings->getFramesCount(); ++$i) {
             $position += $delay;
             $pathToFrame = sprintf($this->runtimeDir . '/frame%03d.jpg', $i);
             $ffmpegVideo->frame(TimeCode::fromSeconds($position))->save($pathToFrame);
 
             $frame = new Imagick();
             $frame->readImage($pathToFrame);
-            $frame->setImageDelay($this->imageDelay);
+            $frame->setImageDelay($this->settings->getImageDelay());
             $gif->addImage($frame);
         }
 
-        $gif->writeImages($this->getSavingPath($pathToVideo), true);
+        $gif->writeImages($this->savingPath, true);
 
         $gif->destroy();
         $this->removeRuntimeDir();
@@ -99,12 +89,6 @@ class GifMaker
         }
     }
 
-    private function prepareGifProperties(int $duration): void
-    {
-        $this->start = max(self::MIN_SECONDS_VALUE, $this->start);
-        $this->end = min($duration, $this->end);
-    }
-
     private function initRuntimeDir(): void
     {
         if (!file_exists($this->runtimeDir)) {
@@ -120,18 +104,5 @@ class GifMaker
         }
 
         rmdir($this->runtimeDir);
-    }
-
-    private function calculateDelay(): float
-    {
-        return (float) (($this->end - $this->start) / ($this->framesCount + 1));
-    }
-
-    private function getSavingPath(string $originFilePath): string
-    {
-        $filename = pathinfo($originFilePath)['filename'];
-        $trimmedSavingDir = rtrim($this->savingDir, '/');
-
-        return "$trimmedSavingDir/$filename.gif";
     }
 }
