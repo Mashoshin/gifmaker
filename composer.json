@@ -2,6 +2,7 @@
     "name": "mashoshin/gifmaker",
     "description": "Library that makes a gif from mp4",
     "type": "library",
+    "license": "MIT",
     "authors": [
         {
             "name": "Evgeniy Mashoshin",
